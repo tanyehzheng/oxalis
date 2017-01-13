@@ -24,7 +24,7 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.servlet.ServletModule;
 import eu.peppol.as2.As2Module;
 import eu.peppol.persistence.guice.OxalisDataSourceModule;
-import eu.peppol.persistence.guice.RepositoryModule;
+import eu.peppol.persistence.guice.SimpleRepositoryModule;
 import eu.peppol.util.OxalisKeystoreModule;
 import eu.peppol.util.OxalisProductionConfigurationModule;
 
@@ -45,8 +45,8 @@ public class OxalisGuiceContextListener extends GuiceServletContextListener {
                 new OxalisKeystoreModule(),
 
                 // Provides the DBMS Repositories
-                new RepositoryModule(),
-
+                // new RepositoryModule(),
+                new SimpleRepositoryModule(),
                 // And the Data source
                 new OxalisDataSourceModule(),
 

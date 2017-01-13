@@ -246,6 +246,11 @@ public class MessageRepositoryH2Impl implements MessageRepository {
         }
     }
 
+    @Override
+    public void saveNativeInboundTransmissionEvidence(PeppolTransmissionMetaData peppolTransmissionMetaData, byte[] receiptByts) {
+        throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
     // Helper methods
     ArtifactPathComputer.FileRepoKey fileRepoKeyFrom(TransferDirection transferDirection, PeppolTransmissionMetaData peppolTransmissionMetaData) {
         return fileRepoKeyFrom(new MessageId(peppolTransmissionMetaData.getMessageId().toString()),

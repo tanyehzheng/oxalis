@@ -86,7 +86,6 @@ public interface MessageRepository {
 
     List<MessageMetaData> findByMessageId(MessageId messageId);
 
-    /**
-     *
-     */
+    void saveNativeInboundTransmissionEvidence(PeppolTransmissionMetaData peppolTransmissionMetaData, byte [] receiptByts);
+
 }

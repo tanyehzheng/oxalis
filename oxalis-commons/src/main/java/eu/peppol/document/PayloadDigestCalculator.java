@@ -57,7 +57,7 @@ public class PayloadDigestCalculator {
 
         ManifestItem manifestItem = SbdhFastParser.searchForAsicManifestItem(sbdh);
         if (manifestItem != null) {
-            // creates an FilterInputStream, which will extract the ASiC in binary format.
+            // creates a FilterInputStream, which will extract the ASiC in binary format.
             inputStreamToCalculateDigestFrom = new Base64InputStream(new AsicFilterInputStream(inputStream));
         } else
             inputStreamToCalculateDigestFrom = inputStream;

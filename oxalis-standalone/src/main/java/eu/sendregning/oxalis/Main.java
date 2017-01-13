@@ -105,6 +105,7 @@ public class Main {
         }
         if (!evidencePath.exists() || !evidencePath.isDirectory()) {
             printErrorMessage(evidencePath + " does not exist or is not a directory");
+            return;
         }
         params.setEvidencePath(evidencePath);
 

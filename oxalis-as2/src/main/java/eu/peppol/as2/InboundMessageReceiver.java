@@ -27,7 +27,6 @@ import eu.peppol.as2.servlet.ResponseData;
 import eu.peppol.document.PayloadDigestCalculator;
 import eu.peppol.document.Sbdh2PeppolHeaderConverter;
 import eu.peppol.document.SbdhFastParser;
-import eu.peppol.evidence.TransmissionEvidence;
 import eu.peppol.identifier.AccessPointIdentifier;
 import eu.peppol.identifier.MessageId;
 import eu.peppol.persistence.MessageRepository;
@@ -37,17 +36,19 @@ import eu.peppol.start.identifier.ChannelId;
 import eu.peppol.statistics.RawStatistics;
 import eu.peppol.statistics.RawStatisticsRepository;
 import eu.peppol.util.OxalisConstant;
-import eu.peppol.xsd.ticc.receipt._1.TransmissionRole;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unece.cefact.namespaces.standardbusinessdocumentheader.StandardBusinessDocumentHeader;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeMessage;
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -180,10 +181,8 @@ public class InboundMessageReceiver {
             // Grabs the S/MIME message to be returned to the sender
             MimeMessage signedMdn = mdnMimeMessageFactory.createSignedMdn(mdnData, httpHeaders);
 
-
-            // Creates the REM evidence and persists it
-            TransmissionEvidence remWithMdnEvidence = as2TransmissionEvidenceFactory.createRemWithMdnEvidence(mdnData, peppolTransmissionMetaData, signedMdn, TransmissionRole.C_3);
-            messageRepository.saveInboundTransportReceipt(remWithMdnEvidence, peppolTransmissionMetaData);
+            // Persists the S/MIME MDN
+            persistMdn(peppolTransmissionMetaData, signedMdn);
 
             // Returns the response to be emitted by whoever is calling us
             ResponseData responseData = new ResponseData(HttpServletResponse.SC_OK, signedMdn, mdnData);
@@ -197,6 +196,23 @@ public class InboundMessageReceiver {
 
             ResponseData responseDataWithErrors = new ResponseData(HttpServletResponse.SC_BAD_REQUEST, signedMdn, mdnData);
             return responseDataWithErrors;
+        }
+    }
+
+    protected void persistMdn(PeppolTransmissionMetaData peppolTransmissionMetaData, MimeMessage signedMdn) {
+
+        long start = System.nanoTime();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            signedMdn.writeTo(baos);
+
+            messageRepository.saveNativeInboundTransmissionEvidence(peppolTransmissionMetaData, baos.toByteArray());
+
+            long elapsed = System.nanoTime() - start;
+            log.debug("Saving MDN took " + TimeUnit.MILLISECONDS.convert(elapsed, TimeUnit.NANOSECONDS));
+
+        } catch (MessagingException |IOException e) {
+            throw new IllegalStateException("Error while converting MDN to bytes");
         }
     }
 
